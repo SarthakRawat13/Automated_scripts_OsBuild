@@ -17,6 +17,7 @@ json_file_path = 'file.json'
 required_field = ['atf', 'rcw', 'dt_uboot','dt_linux','board','defconfig','lsconfig','sdk'] 
 require_folder = "require_files"
 bld_checks_file = []
+flex_command_dir = ""
 
 def extract_flex():
     if not is_file_present2(f"{MAIN_DIR}/setup.env"):
@@ -30,7 +31,7 @@ def extract_flex():
             sys.exit(1)
 
 def init_flex():
-    bool = execute_command(command = f'source {MAIN_DIR}/setup.env')
+    bool = execute_command(command = f'. {MAIN_DIR}/setup.env')
     if bool:
         print("Successfully init flex builder")
     else:
@@ -64,7 +65,7 @@ def confirmation(note = "Press y/Y To proceed\n n/N To terminate"):
 
 # Function to verify if file is present        
 def is_file_present(file):
-    if os.path.exits(file):
+    if os.path.exists(file):
         return True
     print(f"{file} not present. Please make it available")
     sys.exit(1)
@@ -96,9 +97,10 @@ def check_required_params(data, required_params):
 
 # Function to execute Linux command and display output in real-time
 def execute_command(command):
-    print(f"Executing {command}")
+    print(f"\nExectuting command: {command}")
     try:
         process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        print("process: ",process)
         # Iterate over the output line by line. Print the output in real-time
         for line in process.stdout:
             print(line, end='')  
@@ -114,6 +116,7 @@ def execute_command(command):
         else:
             print("\nCommand executed successfully.")
             return True
+        return True
     
     except Exception as e:
         print(f"Error occurred: {e}")
@@ -122,6 +125,9 @@ def execute_command(command):
 
 def scratch_build(board = "ls1046ardb"):
     print(f"Board: {board} is seleted for the default/scratch build")
+    
+    command = f'flex-builder' 
+    execute_command(command)
     
     command = f'flex-builder -c rcw -m {board}' 
     execute_command(command)
@@ -204,15 +210,34 @@ def flex_checks(MAIN_DIR):
 
 if __name__ == "__main__":
     MAIN_DIR = os.path.join(parent_loc(), MAIN_DIR)
+    sys.path.append(os.getcwd())
+    sys.path.append(MAIN_DIR)
+    os.chdir(MAIN_DIR)
+
+    os.system(f". {os.path.join(os.getcwd(),'setup.env')}")
+    print(f". {os.path.join(os.getcwd(),'setup.env')}")
+    os.system(f"flex-builder")
     
     #Description for the script
-    print(f"This automated script is built for AICRAFT pulsar\n\n")
+    print(f"This automated script is built for AICRAFT pulsar\n")
     confirmation(note = "Press\n y/Y to proceed\n n/N to terminate\n")
     print()
+
+    print(f"Checking {MAIN_DIR}")
+    bool_check = is_file_present2(MAIN_DIR)
+    if not bool_check:
+        extract_flex()
+    print(f"{MAIN_DIR} present\n\n")
     
+    
+    print("Initializing flex installer")
+    init_flex()
+    print("\n")
+    
+
     # build check
     print(f"Is this your first build? Means is the a build from scratch")
-    confirm = confirmation(note = "Press\n y/Y For first/default build\n n/N Custom build")
+    confirm = confirmation(note = "Press\n y/Y For first/default build\n n/N Custom build\n")
     parent_dir = parent_loc()
     print()  
     
