@@ -1,0 +1,502 @@
+# Linux SDK configuration for Layerscape/iMX platforms
+
+DISTRIB_NAME:    "NXP LSDK"
+DISTRIB_VERSION: "lsdk2108"
+
+
+# default Ubuntu version
+UBUNTU_CODENAME: "focal"
+UBUNTU_VERSION:  "20.04"
+
+
+# default Debian version
+DEBIAN_CODENAME: "buster"
+DEBIAN_VERSION:  "10"
+
+
+# fetch repo from the default URL and tag if unspecified
+DISTRO_SVR_URL:     "https://www.nxp.com/lgfiles/sdk"
+DEFAULT_REPO_TAG:   "LSDK-21.08"
+
+
+# DPAA2 MC firmware version 
+MC_FW_VERSION:  "10.28.1"
+
+
+# default build options for CI auto build
+BUILD:
+  UBUNTU_MAIN: y
+  UBUNTU_LITE: y
+  UBUNTU_DESKTOP: y
+  UBUNTU_DEVEL: n
+  CENTOS_RFS: n
+  YOCTO_RFS: n
+  BUILDROOT_RFS: n
+
+
+# choose one of the 3 ways to fetch/update repo for various use cases
+UPDATE_REPO:
+  PER_BRANCH: n
+  PER_COMMIT: n
+  PER_TAG: y
+
+
+# firmware/bootloader components
+CONFIG_FW:
+  ATF: y
+  RCW: y
+  UBOOT: y
+  GRUB: n
+  UEFI_BIN: y
+  MC_BIN: y
+  MC_UTILS: y
+
+
+# kernel components
+CONFIG_KERL:
+  LINUX: y
+  CRYPTODEV_LINUX: y
+  LTTNG_MODULES: y
+  MDIO_PROXY_MODULE: y
+
+
+# user can enable/disable component by setting y/n according to demand
+
+CONFIG_APP:
+# networking components
+  RESTOOL: y
+  TSNTOOL: y
+  FLIB: y
+  FMLIB: y
+  FMC: y
+  SPC: y
+  DPDK: y
+  OVS_DPDK: y
+  PKTGEN_DPDK: y
+  VPP: n
+  AIOPSL: y
+  CEETM: y
+  DCE: y
+  ETH_CONFIG: y
+  GPP_AIOPTOOL: y
+  QBMAN_USERSPACE: y
+  AQUANTIA_FIRMWARE_UTILITY: y
+
+# graphics components
+  WAYLAND: y
+  WAYLAND_PROTOCOLS: y
+  GPULIB: y
+  LIBDRM: y
+  WESTON: y
+  XSERVER: y
+
+# multimedia components
+  IMXVPU: n
+
+# security components
+  CST: y
+  OPENSSL: y
+  KEYCTL_CAAM: y
+  CRCONF: y
+  OPTEE: n
+  LIBPKCS11: y
+  SECURE_OBJ: y
+
+# generic components
+  IPERF: y
+  CJSON: y
+  DOCKER_CE: y
+  UUU: n
+  ROS: n
+
+
+# Optionally, pre-install composite firmware in boot partition of storage device
+INSTALL_FLASH_IMAGES: n
+
+
+# Optionally, fetch the prebuilt LSDK rootfs instead of building from scratch
+FETCH_PREBUILT_LSDK_RFS: y
+
+# fuse provisioning
+CONFIG_FUSE_PROVISIONING: n
+
+# In case UPDATE_REPO_PER_TAG is enabled, still use branch for those repos in which only branch is available with no tag
+REPO_TAG_EXCLUDE: " iperf opencv caffe "
+
+# In case UPDATE_REPO_PER_BRANCH is enabled, still use the specified tag instead of HEAD commit for special usecase
+REPO_BRANCH_EXCLUDE: " "
+
+# user can customize the default path of components source and build output path
+DEFAULT_OUT_PATH: $FBDIR/build
+DEFAULT_PACKAGES_PATH: $FBDIR/components
+
+
+# default Layerscape machine list for CI auto build
+BUILD_LAYERSCAPE_IMAGE: y
+CONFIG_MACHINE:
+  LS1012ARDB: n
+  LS1012AQDS: n
+  LS1012AFRWY: n
+  LS1021ATWR: n
+  LS1021AQDS: n
+  LS1028ARDB: n
+  LS1028AQDS: n
+  LS1043ARDB: n
+  LS1043AQDS: n
+  LS1046ARDB: n
+  LS1046AQDS: n
+  LS1046AFRWY: y
+  LS1088ARDB: n
+  LS1088ARDB_PB: n
+  LS1088AQDS: n
+  LS2088ARDB: n
+  LS2088AQDS: n
+  LX2160ARDB: n
+  LX2160AQDS: n
+  LX2160ARDB_REV2: n
+  LX2160AQDS_REV2: n
+  LX2162AQDS: n 
+
+
+# default i.MX machine list for CI auto build
+BUILD_IMX_IMAGE: n
+CONFIG_MACHINE:
+  IMX6QSABRESD: y
+  IMX6QPSABRESD: y
+  IMX6SLLEVK: y
+  IMX7ULPEVK: y
+  IMX8MQEVK: y
+  IMX8MPEVK: y
+  IMX8MMEVK: y
+  IMX8MNEVK: y
+  IMX8QMMEK: y
+  IMX8QXPMEK: y
+
+
+
+# specify key pair for secure boot to override the default one if needed
+# SECURE_PRI_KEY: /path/to/srk.pri
+# SECURE_PUB_KEY: /path/to/srk.pub
+
+
+
+# default kernel config list
+KERNEL_CONFIG:
+  ARM64_LS:  "defconfig lsdk.config"
+  ARM32_LS:  "multi_v7_defconfig multi_v7_lpae.config lsdk.config"
+  ARM64_IMX: "defconfig imx.config imx_v8_defconfig"
+  ARM32_IMX: "imx_v7_defconfig"
+
+
+
+
+# firmware component repositories
+
+repo:
+  atf:
+    url:  https://github.com/nxp-qoriq/atf.git
+    tag:  LSDK-21.08
+
+  uboot:
+    url:  https://github.com/nxp-qoriq/u-boot.git
+    tag:  LSDK-21.08
+
+  rcw:
+    url:  https://github.com/nxp-qoriq/rcw.git
+
+  uefi_bin:
+    url:  https://github.com/nxp-qoriq/qoriq-uefi-binary.git
+
+  grub:
+    url:     git://git.savannah.gnu.org/grub.git
+    commit:  2df291226638261d50
+
+  mbedtls:
+    url:  https://github.com/ARMmbed/mbedtls.git
+    tag:  mbedtls-2.25.0
+
+  mc_utils:
+    url:  https://github.com/nxp-qoriq/mc-utils.git
+    tag:  lf-5.10.35-2.0.0
+
+  mc_bin:
+    url:  https://github.com/nxp-qoriq/qoriq-mc-binary.git
+    tag:  lf-5.10.35-2.0.0
+
+  ddr_phy_bin:
+    url:  https://github.com/nxp-qoriq/ddr-phy-binary.git
+
+  dp_firmware_cadence_bin:
+    url:  https://www.nxp.com/lgfiles/sdk/lsdk2108/firmware-cadence-lsdk2108.bin
+
+  qe_ucode:
+    url:  https://github.com/nxp-qoriq/qoriq-qe-ucode.git
+
+  fm_ucode:
+    url:  https://github.com/nxp-qoriq/qoriq-fm-ucode.git
+
+  pfe_bin:
+    url:  https://github.com/nxp-qoriq/qoriq-engine-pfe-bin.git
+
+  phy_cortina:
+    url:  https://github.com/nxp-qoriq/qoriq-firmware-cortina.git
+
+  phy_inphi:
+    url:  https://github.com/nxp-qoriq/qoriq-firmware-inphi.git
+
+  imx_mkimage:
+    url:  https://github.com/nxp-imx/imx-mkimage.git
+    tag:  lf-5.10.35-2.0.0
+
+  seco_bin:
+    url:  https://www.nxp.com/lgfiles/NMG/MAD/YOCTO/imx-seco-3.8.1.bin
+
+  scfw_bin:
+    url:  https://www.nxp.com/lgfiles/NMG/MAD/YOCTO/imx-sc-firmware-1.9.0.bin
+
+  firmware_imx_bin:
+    url:  https://www.nxp.com/lgfiles/NMG/MAD/YOCTO/firmware-imx-8.12.bin
+
+
+
+# kernel and modules git repositories
+
+  linux:
+    url:    https://github.com/nxp-qoriq/linux.git
+    branch: linux-5.10
+    tag:    LSDK-21.08
+
+  cryptodev_linux:
+    url:  https://github.com/cryptodev-linux/cryptodev-linux.git
+    tag:  cryptodev-linux-1.13
+    
+  lttng_modules:
+    url:  https://git.lttng.org/lttng-modules.git
+    tag:  v2.13.0
+     
+  mdio_proxy_module:
+    url:  https://github.com/nxp-qoriq/mdio-proxy-module.git
+    tag:  LSDK-21.08
+
+
+# networking component repositories
+
+  restool:
+    url:  https://github.com/nxp-qoriq/restool.git
+  
+  fmc:
+    url:  https://github.com/nxp-qoriq/fmc.git
+
+  spc:
+    url:  https://github.com/nxp-qoriq/spc.git
+
+  tsntool:
+    url:  https://github.com/nxp-qoriq/tsntool.git
+
+  dpdk:
+    url:  https://github.com/nxp-qoriq/dpdk.git
+
+  vpp:
+    url:  https://github.com/nxp-qoriq/vpp.git
+    tag:  21.08-LSDK
+
+  ovs_dpdk:
+    url:  https://github.com/nxp-qoriq/ovs-dpdk.git
+
+  pktgen_dpdk:
+    url:  git://dpdk.org/apps/pktgen-dpdk
+    tag:  pktgen-21.05.0
+
+  aiopsl: 
+    url:  https://github.com/nxp-qoriq/aiopsl.git
+
+  ceetm:
+    url:  https://github.com/nxp-qoriq/ceetm.git
+
+  dce:
+    url:  https://github.com/nxp-qoriq/dce.git
+
+  flib:
+    url:  https://github.com/nxp-qoriq/flib.git
+
+  fmlib:
+    url:  https://github.com/nxp-qoriq/fmlib.git
+
+  aquantia_firmware_utility:
+    url:  https://github.com/nxp-qoriq/aquantia-firmware-utility.git
+
+  gpp_aioptool:
+    url:  https://github.com/nxp-qoriq/gpp-aioptool.git
+
+  qbman_userspace:
+    url:  https://github.com/nxp-qoriq/qbman_userspace.git
+
+  eth_config:
+    url:  https://github.com/nxp-qoriq/eth-config.git
+
+
+
+# security component repositories
+
+  cst:
+    url:  https://github.com/nxp-qoriq/cst.git
+
+  openssl:
+    url:  https://github.com/nxp-qoriq/openssl.git
+
+  libpkcs11:
+    url:  https://github.com/nxp-qoriq/libpkcs11.git
+
+  secure_obj:
+    url:  https://github.com/nxp-qoriq/secure_obj.git
+
+  optee_os:
+    url:  https://github.com/nxp-qoriq/optee_os.git
+
+  optee_client:
+    url:  https://github.com/nxp-qoriq/optee_client.git
+
+  optee_test:
+    url:  https://github.com/nxp-qoriq/optee_test.git
+
+  crconf:
+    url:  https://github.com/Thermi/crconf.git
+    tag:  0.4
+
+  keyctl_caam:
+    url:  https://github.com/nxp-imx/keyctl_caam.git
+    tag:  lf-5.10.35-2.0.0
+
+
+
+# graphics component repositories
+
+  wayland:
+    url:  https://gitlab.freedesktop.org/wayland/wayland.git
+    tag:  1.18.0
+
+  wayland_protocols:
+    url:  https://github.com/nxp-imx/wayland-protocols-imx.git
+    tag:  lf-5.10.35-2.0.0
+
+  weston:
+    url:  https://github.com/nxp-imx/weston-imx.git
+    tag:  lf-5.10.35-2.0.0
+
+  libdrm:
+    url:  https://github.com/nxp-imx/libdrm-imx.git
+    tag:  lf-5.10.35-2.0.0
+
+  gpulib_bin:
+    url:  https://www.nxp.com/lgfiles/NMG/MAD/YOCTO/imx-gpu-viv-6.4.3.p2.0d-aarch64.bin
+
+  xserver:
+    url:  https://gitlab.freedesktop.org/xorg/xserver.git
+    tag:  xorg-server-1.20.9
+
+
+# multimedia component repositories
+
+  vpu_hantro_bin:
+    url:  https://www.nxp.com/lgfiles/NMG/MAD/YOCTO/imx-vpu-hantro-1.22.0.bin
+
+  vpu_hantro_vc_bin:
+    url:  https://www.nxp.com/lgfiles/NMG/MAD/YOCTO/imx-vpu-hantro-vc-1.3.0.bin
+
+
+# generic component repositories
+
+  cjson:
+    url:  https://github.com/DaveGamble/cJSON.git
+    tag:  v1.7.10
+
+  iperf:
+    url:  https://github.com/lynxis/iperf2.git
+    branch:  master
+
+  docker_ce_bin:
+    url:  https://www.nxp.com/lgfiles/sdk/lsdk2108/docker-ce-bin-v18.09.6.tar.gz
+
+  buildroot:
+    url:  https://github.com/buildroot/buildroot.git
+    tag:  2021.02
+
+  yocto_poky:
+    url:  git://git.yoctoproject.org/poky.git
+    tag:  yocto-3.3.1
+
+  initrd_bin:
+    url:  https://www.nxp.com/lgfiles/sdk/lsdk2108
+
+  iproute2_src:
+    url:  https://mirrors.edge.kernel.org/pub/linux/utils/net/iproute2/iproute2-4.15.0.tar.gz
+
+  uuu:
+    url:  https://github.com/nxp-imx/mfgtools.git
+    tag:  uuu_1.4.149
+
+
+# eIQ component repositories
+
+CONFIG_EIQ: n
+  ARMCL: y
+  ARMNN: y
+  CAFFE: y
+  FLATBUFFER: y
+  ONNX: y
+  ONNXRUNTIME: y
+  OPENCV: y
+  PROTOBUF: y
+  TFLITE: y
+
+repo:
+  tflite:
+    url:    https://github.com/tensorflow/tensorflow.git
+    tag:    v2.2.0
+
+  armcl:
+    url:    https://github.com/Arm-software/ComputeLibrary.git
+    tag:    v20.08
+
+  armnn:
+    url:    https://github.com/ARM-software/armnn.git
+    tag:    v20.08
+
+  armnntf:
+    url:    https://github.com/tensorflow/tensorflow.git
+    tag:    v1.15.0
+
+  bazel_bin:
+    url:    https://github.com/bazelbuild/bazel/releases/download/0.15.0/bazel-0.15.0-installer-linux-x86_64.sh
+
+  boost:
+    url:    https://telkomuniversity.dl.sourceforge.net/project/boost/boost/1.64.0/boost_1_64_0.tar.bz2
+
+  caffe:
+    url:    https://github.com/BVLC/caffe.git
+    branch: master
+
+  flatbuffer:
+    url:    https://github.com/google/flatbuffers.git
+    tag:    v1.11.0
+
+  onnx:
+    url:    https://github.com/onnx/onnx.git
+    tag:    v1.6.0
+
+  onnxruntime:
+    url:    https://github.com/Microsoft/onnxruntime.git
+    tag:    v1.1.2
+
+  opencv:
+    url:    https://github.com/nxp-imx/opencv-imx.git
+    branch: 4.2.0_imx
+
+  protobuf:
+    url:    https://github.com/google/protobuf.git
+    tag:    v3.7.0
+
+  swig:
+    url:    https://github.com/swig/swig.git
+    tag:    v4.0.0
+  

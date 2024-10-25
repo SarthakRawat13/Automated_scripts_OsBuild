@@ -1,0 +1,140 @@
+/dts-v1/;
+
+#include "fsl-ls1046a.dtsi"
+#include "dt-bindings/gpio/gpio.h" 
+
+/ {
+	model = "++++++++++++++++++++++++++++++++++++++++LINUX DTS 240620++++++++++++++++++++++++++++++++";
+	compatible = "fsl,ls1046a";
+
+	aliases {
+		serial0 = &duart0;
+		serial1 = &duart1;
+		serial2 = &duart2;
+		serial3 = &duart3;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+};
+
+&duart1 {
+	status = "okay";
+};
+
+&esdhc {
+	mmc-hs200-1_8v;
+};
+
+&i2c0 {
+	status = "okay";
+
+	ina220@40 {
+		compatible = "ti,ina220";
+		reg = <0x40>;
+		shunt-resistor = <1000>;
+	};
+
+	ina220@41 {
+		compatible = "ti,ina220";
+		reg = <0x41>;
+		shunt-resistor = <1000>;
+	};
+
+	ina220@44 {
+		compatible = "ti,ina220";
+		reg = <0x44>;
+		shunt-resistor = <1000>;
+	};
+};
+
+
+&i2c2 {
+	status = "okay";
+
+			
+	thermal-monitor@48 {
+		compatible = "nxp,lm75ad";
+		reg = <0x48>;
+	};
+
+	rtc@53 {
+		compatible = "nxp,pca2131";
+		reg = <0x53>;
+		};
+
+	iim42652@69 {
+		compatible = "invensense,iim42652";
+		reg = <0x69>;
+	};
+
+	
+	dac@2a {
+		compatible = "ad,ltc7106";
+		reg = <0x2a>;
+	};
+};
+
+
+&i2c3 {
+	status = "okay";
+
+
+	temp-sensor@4c {
+		compatible = "adi,adt7461";
+		reg = <0x4c>;
+	};
+
+};
+	
+
+&qspi {
+	status = "okay";
+
+	mt25qu01g0: flash@0 {
+		compatible = "jedec,spi-nor";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		spi-max-frequency = <50000000>;
+		spi-rx-bus-width = <4>;
+		spi-tx-bus-width = <1>;
+		reg = <0>;
+	};
+};
+
+
+&dspi {
+    status = "okay";
+
+    mb85rs4mt: fram@0 {
+        #address-cells = <1>;
+        #size-cells = <1>;
+        compatible = "fujitsu,mb85rs4mt";
+        spi-max-frequency = <50000000>;
+        reg = <0>;
+    };
+
+};
+
+#include "fsl-ls1046-post.dtsi"
+
+&fman0 {
+	
+	ethernet@e4000 { 
+		phy-handle = <&rgmii_phy1>;
+		phy-connection-type = "rgmii-id";
+		status = "okay";
+	};
+
+	mdio@fc000 {
+
+		rgmii_phy1: ethernet-phy@1 {
+		compatible = "vitesse,vsc8501";
+		device_type = "ethernet-phy";
+			reg = <0x1f>;
+		reset-gpios = <&gpio0 20 GPIO_ACTIVE_LOW>;
+		};
+	};
+};
+

@@ -1,0 +1,62 @@
+/*
+TOPAZ_RCW_for eMMC boot_240619
+ */
+
+#include <../ls1046ardb/ls1046a.rcwi>
+
+SYS_PLL_RAT=6 // Platform 600 MHz
+MEM_PLL_RAT=21 // Memory 2100 MHz
+CGA_PLL1_RAT=14 // Core 1400
+CGA_PLL2_RAT=12 // FMan 600, eSDHC 1200
+SRDS_PRTCL_S2=21879 // 5577: SerDes2 two x1 Gen3/2 and 0ne x2 Gen3/2
+SRDS_PLL_PD_S1=3 // Power down SerDes1
+SRDS_DIV_PEX_S2=0 // 8GTps max transfer, 1 Can train up to a max rate of 5G
+DDR_REFCLK_SEL=1
+DDR_FDBK_MULT=2
+PBI_SRC=4 //Select QSPI as boot source
+IFC_MODE=37 //Valid IFC_MODE encodings are a subset of the cfg_rcw_src encodings.
+HWA_CGA_M1_CLK_SEL=6 //Async mode: Cluster Group A PLL2 /2 is clock
+DRAM_LAT=1
+UART_BASE=5 // Configure UART2_SIN, UART2_SOUT, GPIO_19, GPIO_20, GPIO_21, GPIO_22
+RTC=1 // Configure for GPIO
+IRQ_OUT=1 // Reserved
+SPI_BASE=2 // 0 Configure SPI, 2 for M2_RST GPIOs
+IFC_GRP_A_EXT=1 // Configure QSPI_A_DATA[3]
+IFC_GRP_D_EXT=0 //  See IFC_GRP_D_BASE
+IFC_GRP_E1_EXT=0 // Configure IFC_GRP_E1_EXT
+IFC_GRP_F_EXT=1 // Configure QSPI_A_DATA[0:2], QSPI_A_CS0, QSPI_A_SCK
+IFC_GRP_D_BASE=1 // Configure GPIO2[13:15]
+IFC_GRP_E1_BASE=1 // Configure GPIO2[10:12]
+
+EC2=1 // Configure GPIO3
+EM2=1 // Configure GPIO3
+
+TVDD_VSEL=1 // 2.5v, Configures voltage of the TVDD IO domain
+DVDD_VSEL=2 // 3.3v, Configures voltage of the DVDD IO domain
+EVDD_VSEL=0 // 1.8v, Configures voltage of the EVDD IO domain
+LVDD_VSEL=1 // 2.5v, Configures voltage of the LVDD IO domain
+IIC2_EXT=2 // Unused, GPIO
+SYSCLK_FREQ=600
+HWA_CGA_M2_CLK_SEL=1
+
+.pbi
+// set boot location ptr
+write 0x570600, 0x00000000
+write 0x570604, 0x10000000
+.end
+
+// Errta A-008850 for ddr controller for barrier transaction
+#include <../ls1046ardb/cci_barrier_disable.rcw>
+// Set USB PHY PLL for 100MHz
+#include <../ls1046ardb/usb_phy_freq.rcw>
+// Clear SerDes RxBoost on SD2 lane D
+#include <../ls1046ardb/serdes_sata.rcw>
+// Errata A-010477 and  A-008851 for PCI Express Gen3 link training
+#include <../ls1046ardb/a008851.rcw>
+#include <../ls1046ardb/a010477.rcw>
+
+.pbi
+// Software must wait after updating the ALTCBAR.
+// Below is the PBL Wait command (0xc0)
+write 0x6100c0, 0x000fffff
+.end

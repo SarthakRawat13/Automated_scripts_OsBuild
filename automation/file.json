@@ -3,7 +3,7 @@
     "rcw": "C:\\Users\\Sarthak\\Pictures\\image.png",
     "dt_uboot":"",
     "dt_linux":"",
-    "board": "C:\\Users\\Sarthak\\Config\\config.json",
+    "board": "ls1046afrwy",
     "defconfig": "",
     "lsconfig": "",
     "sdk": ""

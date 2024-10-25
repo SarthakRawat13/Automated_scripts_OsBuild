@@ -2,6 +2,7 @@ import json
 import os
 import sys
 import subprocess
+import shutil
 try:
     import yaml
 except ImportError:
@@ -15,7 +16,7 @@ MAIN_DIR = "flexbuild_lsdk2108_github"
 flex_zip = "flexbuild_lsdk2108_github.tgz"
 json_file_path = 'file.json'
 required_field = ['atf', 'rcw', 'dt_uboot','dt_linux','board','defconfig','lsconfig','sdk'] 
-require_folder = "require_files"
+require_folder = "required_files"
 bld_checks_file = []
 flex_command_dir = ""
 
@@ -31,7 +32,7 @@ def extract_flex():
             sys.exit(1)
 
 def init_flex():
-    bool = execute_command(command = f'. {MAIN_DIR}/setup.env')
+    bool = source_env_file(command = f"bash -c 'source setup.env && env'")
     if bool:
         print("Successfully init flex builder")
     else:
@@ -59,6 +60,17 @@ def confirmation(note = "Press y/Y To proceed\n n/N To terminate"):
             return True
         if key_pressed == 'n' or key_pressed == 'N':
             sys.exit(1)
+        
+        print("****** Please either enter y or n")
+        
+# Function for confirmation
+def confirmation2(note = "Press y/Y To proceed\n n/N To terminate"):
+    while True:
+        key_pressed = input(note)
+        if key_pressed == 'y' or key_pressed == 'Y':
+            return True
+        if key_pressed == 'n' or key_pressed == 'N':
+            return False
         
         print("****** Please either enter y or n")
         
@@ -126,46 +138,91 @@ def execute_command(command):
 def scratch_build(board = "ls1046ardb"):
     print(f"Board: {board} is seleted for the default/scratch build")
     
-    command = f'flex-builder' 
+    confirmation(note = "Press\n y/Y to proceed\n n/N to terminate\n")
+    command = f"flex-builder -c rcw -m {board}"
     execute_command(command)
     
-    command = f'flex-builder -c rcw -m {board}' 
+    confirmation(note = "Press\n y/Y to proceed\n n/N to terminate\n")
+    command = f"flex-builder -c atf -m {board} -b qspi"
     execute_command(command)
     
-    command = f'flex-builder -c atf -m {board} -b qspi'
-    execute_command(command)
-    
-    command = f'bld -m {board}'
+    confirmation(note = "Press\n y/Y to proceed\n n/N to terminate\n")
+    command = f"flex-builder -m {board}"
     execute_command(command)
     
 
 def optee(value, targetdirectory):
-    with open(os.path.join(targetdirectory,'configs/sdk.yml'), 'r') as file:
-        data = yaml.safe_load(file)
-        
-    data['CONFIG_APP']['OPTEE'] = value 
+    sdk_yml_path = os.path.join(targetdirectory, 'configs', 'sdk.yml')
+    
+    # Print the path for debugging
+    print(f"YAML file path: {sdk_yml_path}")
 
-    with open(os.path.join(targetdirectory,'configs/sdk.yml'), 'w') as file:
-        yaml.dump(data, file, default_flow_style=False)
+    # Create a backup of the original file before modifying it
+    backup_path = sdk_yml_path + ".backup"
+    shutil.copy(sdk_yml_path, backup_path)
+    print(f"Backup created at: {backup_path}")
+
+    # Read the YAML file as text
+    with open(sdk_yml_path, 'r') as file:
+        lines = file.readlines()
+
+    # Modify the OPTEE value in the text
+    with open(sdk_yml_path, 'w') as file:
+        for line in lines:
+            # Find the line that contains 'OPTEE'
+            if 'OPTEE' in line:
+                # Replace the value after 'OPTEE: ' with the new value
+                line = f"  OPTEE: {value}\n"
+            # Write each line (modified or not) back to the file
+            file.write(line)
+
+    print(f"Successfully updated OPTEE to: {value}")
+
+
+# def optee(value, targetdirectory):
+#     print(os.path.join(targetdirectory,'configs/sdk.yml'))
+#     with open(os.path.join(targetdirectory,'configs/sdk.yml'), 'r') as file:
+#         data = yaml.safe_load(file)
+    
+#     print("#################################")
+#     print("#################################")
+#     print("#################################")
+#     print("#################################")
+#     print(data['CONFIG_APP']['OPTEE'])
+#     data['CONFIG_APP']['OPTEE'] = value 
+
+#     with open(os.path.join(targetdirectory,'configs/sdk.yml'), 'w') as file:
+#         yaml.dump(data, file, default_flow_style=False)
     
     
 
 def custom_build(board = "ls1046ardb", targetdirectory=MAIN_DIR, firmware=False):
+    
+    boolcheck = input("Do you want a clean build\n y/Y to clean\n n/N to use old build\n")
+    if boolcheck == 'y' or boolcheck == 'Y':
+        command = f'flex-builder clean' 
+        execute_command(command)
+    
+    confirmation(note = "Press\n y/Y to proceed\n n/N to terminate\n")
     print(f"Board: {board} is seleted for the build")
     
+    confirmation(note = "Press\n y/Y to proceed\n n/N to terminate\n")
     command = f'flex-builder -c rcw -m {board}' 
     execute_command(command)
     
+    confirmation(note = "Press\n y/Y to proceed\n n/N to terminate\n")
     command = f'flex-builder -c atf -m {board} -b qspi'
     execute_command(command)
     
     if firmware:
+        confirmation(note = "Press\n y/Y to proceed\n n/N to terminate\n")
         optee('n', targetdirectory)
         command = f'flex-builder -i mkfw -m {board} -b qspi'
         execute_command(command)
         optee('y', targetdirectory)
         return
     
+    confirmation(note = "Press\n y/Y to proceed\n n/N to terminate\n")
     optee('y', targetdirectory)
     command = f'bld -m {board}'
     execute_command(command)
@@ -174,32 +231,32 @@ def custom_build(board = "ls1046ardb", targetdirectory=MAIN_DIR, firmware=False)
 
 def flex_checks(MAIN_DIR):
     bool_check = False
-    path = os.join.path(MAIN_DIR, 'components','linux', 'linux')
+    path = os.path.join(MAIN_DIR, 'components','linux', 'linux')
     if not os.path.exists(path):
         print(f'PAth doen not exists {path}')
         bool_check = True
         
-    path = os.join.path(MAIN_DIR, 'components','firmware','uboot')
+    path = os.path.join(MAIN_DIR, 'components','firmware','uboot')
     if not os.path.exists(path):
         print(f'PAth doen not exists {path}')
         bool_check = True
 
-    path = os.join.path(MAIN_DIR, 'components','firmware','rcw')
+    path = os.path.join(MAIN_DIR, 'components','firmware','rcw')
     if not os.path.exists(path):
         print(f'PAth doen not exists {path}')
         bool_check = True
         
-    path = os.join.path(MAIN_DIR, 'components','firmware','atf')
+    path = os.path.join(MAIN_DIR, 'components','firmware','atf')
     if not os.path.exists(path):
         print(f'PAth doen not exists {path}')
         bool_check = True
         
-    path = os.join.path(MAIN_DIR, 'configs','linux')
+    path = os.path.join(MAIN_DIR, 'configs','linux')
     if not os.path.exists(path):
         print(f'PAth doen not exists {path}')
         bool_check = True
         
-    path = os.join.path(MAIN_DIR, 'configs','sdk.cfg')
+    path = os.path.join(MAIN_DIR, 'configs','sdk.yml')
     if not os.path.exists(path):
         print(f'PAth doen not exists {path}')
         bool_check = True
@@ -208,20 +265,50 @@ def flex_checks(MAIN_DIR):
         print("Please rerun the flexbuilder from scratch")
         sys.exit(1)
 
+
+def source_env_file(command):
+    """ Run the source.env file and update Python environment variables """
+    # command = f"bash -c 'source {file_path} && env'"
+    
+    # Run the command and capture the output
+    proc = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True, executable="/bin/bash")
+    output, _ = proc.communicate()
+
+    # Split the output into lines
+    env_vars = output.decode().splitlines()
+
+    # Set the environment variables in Python
+    for line in env_vars:
+        key, _, value = line.partition("=")
+        os.environ[key] = value
+
+    return True
+# # Run the function to source the environment file
+# source_env_file('source.env')
+
+# # Verify by printing specific environment variables
+# print(f"FBDIR: {os.getenv('FBDIR')}")
+# print(f"PATH: {os.getenv('PATH')}")
+
+
+
 if __name__ == "__main__":
     MAIN_DIR = os.path.join(parent_loc(), MAIN_DIR)
+    flex_command_dir = os.path.join(MAIN_DIR, 'tools')
+    parent_dir = parent_loc()
+    currrent_dir = os.getcwd()
+    
     sys.path.append(os.getcwd())
     sys.path.append(MAIN_DIR)
+    sys.path.append(flex_command_dir)
     os.chdir(MAIN_DIR)
 
-    os.system(f". {os.path.join(os.getcwd(),'setup.env')}")
-    print(f". {os.path.join(os.getcwd(),'setup.env')}")
-    os.system(f"flex-builder")
-    
+
     #Description for the script
     print(f"This automated script is built for AICRAFT pulsar\n")
     confirmation(note = "Press\n y/Y to proceed\n n/N to terminate\n")
     print()
+
 
     print(f"Checking {MAIN_DIR}")
     bool_check = is_file_present2(MAIN_DIR)
@@ -234,12 +321,12 @@ if __name__ == "__main__":
     init_flex()
     print("\n")
     
-
+    
     # build check
     print(f"Is this your first build? Means is the a build from scratch")
-    confirm = confirmation(note = "Press\n y/Y For first/default build\n n/N Custom build\n")
-    parent_dir = parent_loc()
+    confirm = confirmation2(note = "Press\n y/Y For first/default build\n n/N Custom build\n")
     print()  
+    
     
     if confirm:
         print("This is a default/scratch build")
@@ -248,9 +335,12 @@ if __name__ == "__main__":
         sys.exit(1)
 
 
+    os.chdir(currrent_dir)
+    
     print("This is a custom build")
     print(f"Make sure you have placed all the files in {require_folder} folder")
     confirmation(note = "Press\n y/Y to proceed\n n/N to terminate\n")
+    
     
     # Cross check if files are present or not
     print(f"Performing checks to see if files are present")
@@ -283,25 +373,28 @@ if __name__ == "__main__":
         
 
     print("Copying all the files")
-    command = f"cp -r ./{require_folder} {MAIN_DIR}"
+    command = f"cp -r ./{require_folder}/* {MAIN_DIR}"
     execute_command(command)
     print("/n")
 
     #Perfrom checks first to flexbuilder folder
     flex_checks(MAIN_DIR)
-    
     print(f"Build process")
+    
+    os.chdir(MAIN_DIR)
     confirmation(note = "Press\n y/Y to proceed\n n/N to terminate\n")
     
     #board process for firmware
     bool_check = input("Do you want to Build firmware only\nPress\n y/Y to proceed\n Any other key to skip\n")
     if bool_check:
         custom_build(board = board, targetdirectory = MAIN_DIR, firmware=True)
+
     
     print(f"Whole build process which includes rootfs, bootfs and firmware")
     bool_check = input("Do you want to Build whole OS\nPress\n y/Y to proceed\n Any other key to skip\n")
     if bool_check:
         custom_build(board = board, targetdirectory = MAIN_DIR, firmware=False)
+        
         
     print("Build process is completed")    
     

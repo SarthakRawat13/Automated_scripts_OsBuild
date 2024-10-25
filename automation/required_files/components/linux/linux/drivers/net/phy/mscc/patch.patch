@@ -1,0 +1,42 @@
+diff --git a/drivers/net/phy/mscc/mscc.h b/drivers/net/phy/mscc/mscc.h
+index 75c8803b3bb9..d310f0fbd700 100644
+--- a/drivers/net/phy/mscc/mscc.h
++++ b/drivers/net/phy/mscc/mscc.h
+@@ -169,6 +169,7 @@ enum rgmii_clock_delay {
+ 
+ /* RGMII controls at address 20E2, for VSC8502 and similar */
+ #define VSC8502_RGMII_CNTL		  20
++#define VSC8502_RGMII_RXCLK_OUTPUT_MASK 0x0800
+ #define VSC8502_RGMII_RX_DELAY_MASK	  0x0070
+ #define VSC8502_RGMII_RX_CLK_DELAY_POS	  4
+ #define VSC8502_RGMII_TX_DELAY_MASK	  0x0007
+diff --git a/drivers/net/phy/mscc/mscc_main.c b/drivers/net/phy/mscc/mscc_main.c
+index c855594871d3..5410ca4f7272 100644
+--- a/drivers/net/phy/mscc/mscc_main.c
++++ b/drivers/net/phy/mscc/mscc_main.c
+@@ -562,17 +562,25 @@ static int vsc85xx_rgmii_set_skews(struct phy_device *phydev, u32 rgmii_cntl,
+ static int vsc85xx_default_config(struct phy_device *phydev)
+ {
+ 	int rc;
+-
++	u16 reg_val;
+ 	phydev->mdix_ctrl = ETH_TP_MDI_AUTO;
+ 
+ 	if (phy_interface_mode_is_rgmii(phydev->interface)) {
+ 		rc = vsc85xx_rgmii_set_skews(phydev, VSC8502_RGMII_CNTL,
+ 					     VSC8502_RGMII_RX_DELAY_MASK,
+ 					     VSC8502_RGMII_TX_DELAY_MASK);
+ 		if (rc)
+ 			return rc;
+-	}
+ 
++		mutex_lock(&phydev->lock);
++		reg_val = phy_read_paged(phydev, MSCC_PHY_PAGE_EXTENDED_2, VSC8502_RGMII_CNTL);
++		reg_val &= ~(VSC8502_RGMII_RXCLK_OUTPUT_MASK);
++		rc = phy_write_paged(phydev, MSCC_PHY_PAGE_EXTENDED_2,VSC8502_RGMII_CNTL, reg_val);
++		mutex_unlock(&phydev->lock);
++
++	}
+ 	return 0;
+ }
+ 
