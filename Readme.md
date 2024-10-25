@@ -1,50 +1,45 @@
 
-# Building and Deployment Automation Instructions
+# Automated Script for Building AICRAFT OS and Deploying on a Custom Board
 
-## Introduction
-This project aims to automate the build and production deployment process for custom hardware or software environments. It simplifies the workflow by using Python scripts to streamline both stages—building the project and deploying it. With clear instructions and easy setup, users can get their custom boards up and running efficiently.
+This repository contains an automated script for building the **AICRAFT OS** and deploying it on a custom board. The code and detailed instructions on how to run the automation script are located inside the `automation` folder. Please read the instructions carefully and follow the procedure to ensure a successful build and deployment.
 
-## Requirements
-- A **Python environment** is required to run the provided scripts.
-- The **flexbuild_lsdk2108_github** package is necessary to initialize the build environment.
+## Overview
 
-## Steps to Follow
+This repository helps automate the following tasks:
+1. Building AICRAFT OS.
+2. Deploying the custom OS on a specific custom board.
 
-### 1. Clone the Repository
-First, clone the repository where the automation scripts are stored. Once the repository is cloned, you will find two folders inside:
-   - **automation**: This folder contains four critical files:
-     - `development.py`: A Python script responsible for the build process.
-     - `production.py`: A Python script that handles the deployment.
-     - `file.json`: Contains configuration details needed for the custom board.
-     - `githubCred.json`: Holds user-specific information like GitHub username and SSH key.
-   - **flex.zip**: A zipped folder related to Flexbuild.
+All related code and necessary documentation can be found in the `automation` folder. For additional information or troubleshooting, refer to the detailed instructions provided.
 
-### 2. Prepare the Environment
-There are two paths you can take, depending on your setup:
-   - **Step 3**: If you have already downloaded and extracted Flexbuild, follow this step.
-   - **Step 4**: If Flexbuild is not downloaded, proceed to the next step.
+## Getting Started
 
-### 3. Directory Placement
-If you have previously downloaded Flexbuild, ensure that the `automation` folder from the cloned repository is placed **at the same directory level** as your `flexbuild_lsdk2108_github` folder. This is crucial for ensuring that the build scripts can locate necessary resources.
-
-### 4. Running the Script
-To execute the deployment process:
-1. Open a terminal window.
-2. Navigate to the `automation` folder using the `cd` command. For example:
+1. **Clone the repository** to your local machine:
    ```bash
-   cd ./automation
+   git clone https://github.com/your-repo/your-project.git
+   cd your-project
    ```
-3. Run the deployment script by typing:
+
+2. **Navigate to the `automation` folder**:
    ```bash
-   python3 production.py
+   cd automation
    ```
-   Follow the on-screen instructions that will guide you through the deployment process.
 
-## Special Note
-While executing `production.py`, especially if you're using GitHub for version control, ensure that the **GitHub username** and **SSH key** are correctly filled out in `githubCred.json`. These credentials are necessary for secure access and proper functioning of the script.
+3. **Read the instructions** provided in the `README.md` file inside the `automation` folder, which contains:
+   - Step-by-step guide to building the OS.
+   - Configuration settings required for your custom board.
+   - How to deploy the OS to the board.
 
-### Additional Considerations
-- Always verify that your Python environment is correctly set up, with any required dependencies installed.
-- Double-check the JSON configuration files (`file.json` and `githubCred.json`) to ensure they contain accurate information, especially if you are working with custom hardware.
+4. **Run the script** as instructed, following the outlined process for building and deploying the OS.
 
-This process helps automate and standardize the build and deployment flow, reducing manual work and minimizing the chances of error.
+
+## Deployment
+
+Once the build is complete, follow the deployment steps to flash or install the custom OS on your custom board. Instructions for flashing and testing the board can be found in the `deployment` section of the `automation` folder.
+
+
+### Common Issues:
+- Missing dependencies
+- Incorrect board configurations
+
+
+**Note:** This script is designed specifically for a custom board. Ensure that you have the correct hardware setup and meet all the requirements before proceeding.
