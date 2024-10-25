@@ -141,92 +141,74 @@ def scratch_build(board = "ls1046ardb"):
     confirmation(note = "Press\n y/Y to proceed\n n/N to terminate\n")
     command = f"flex-builder -c rcw -m {board}"
     execute_command(command)
+    print()
     
     confirmation(note = "Press\n y/Y to proceed\n n/N to terminate\n")
     command = f"flex-builder -c atf -m {board} -b qspi"
     execute_command(command)
+    print()
     
     confirmation(note = "Press\n y/Y to proceed\n n/N to terminate\n")
     command = f"flex-builder -m {board}"
     execute_command(command)
+    print()
     
 
 def optee(value, targetdirectory):
     sdk_yml_path = os.path.join(targetdirectory, 'configs', 'sdk.yml')
-    
-    # Print the path for debugging
     print(f"YAML file path: {sdk_yml_path}")
 
-    # Create a backup of the original file before modifying it
     backup_path = sdk_yml_path + ".backup"
     shutil.copy(sdk_yml_path, backup_path)
     print(f"Backup created at: {backup_path}")
 
-    # Read the YAML file as text
     with open(sdk_yml_path, 'r') as file:
         lines = file.readlines()
 
-    # Modify the OPTEE value in the text
     with open(sdk_yml_path, 'w') as file:
         for line in lines:
-            # Find the line that contains 'OPTEE'
             if 'OPTEE' in line:
-                # Replace the value after 'OPTEE: ' with the new value
                 line = f"  OPTEE: {value}\n"
-            # Write each line (modified or not) back to the file
             file.write(line)
 
     print(f"Successfully updated OPTEE to: {value}")
 
 
-# def optee(value, targetdirectory):
-#     print(os.path.join(targetdirectory,'configs/sdk.yml'))
-#     with open(os.path.join(targetdirectory,'configs/sdk.yml'), 'r') as file:
-#         data = yaml.safe_load(file)
-    
-#     print("#################################")
-#     print("#################################")
-#     print("#################################")
-#     print("#################################")
-#     print(data['CONFIG_APP']['OPTEE'])
-#     data['CONFIG_APP']['OPTEE'] = value 
-
-#     with open(os.path.join(targetdirectory,'configs/sdk.yml'), 'w') as file:
-#         yaml.dump(data, file, default_flow_style=False)
-    
-    
-
 def custom_build(board = "ls1046ardb", targetdirectory=MAIN_DIR, firmware=False):
-    
+    print()
     boolcheck = input("Do you want a clean build\n y/Y to clean\n n/N to use old build\n")
     if boolcheck == 'y' or boolcheck == 'Y':
         command = f'flex-builder clean' 
         execute_command(command)
     
-    confirmation(note = "Press\n y/Y to proceed\n n/N to terminate\n")
     print(f"Board: {board} is seleted for the build")
+    print()
     
-    confirmation(note = "Press\n y/Y to proceed\n n/N to terminate\n")
+    confirmation(note = "Press\n y/Y to proceed to next step (rcw)\n n/N to terminate\n")
     command = f'flex-builder -c rcw -m {board}' 
     execute_command(command)
+    print()
     
-    confirmation(note = "Press\n y/Y to proceed\n n/N to terminate\n")
+    confirmation(note = "Press\n y/Y to proceed to next step (atf)\n n/N to terminate\n")
     command = f'flex-builder -c atf -m {board} -b qspi'
     execute_command(command)
+    print()
     
     if firmware:
-        confirmation(note = "Press\n y/Y to proceed\n n/N to terminate\n")
+        confirmation(note = "Press\n y/Y to proceed to next step (firmware)\n n/N to terminate\n")
         optee('n', targetdirectory)
         command = f'flex-builder -i mkfw -m {board} -b qspi'
         execute_command(command)
+        print()
         optee('y', targetdirectory)
         return
     
-    confirmation(note = "Press\n y/Y to proceed\n n/N to terminate\n")
+    
+    confirmation(note = "Press\n y/Y to proceed to next step (bld)\n n/N to terminate\n")
     optee('y', targetdirectory)
-    command = f'bld -m {board}'
+    command = f'flex-builder -m {board}'
     execute_command(command)
-
+    print()
 
 
 def flex_checks(MAIN_DIR):
@@ -375,21 +357,27 @@ if __name__ == "__main__":
     print("Copying all the files")
     command = f"cp -r ./{require_folder}/* {MAIN_DIR}"
     execute_command(command)
-    print("/n")
+    print()
 
     #Perfrom checks first to flexbuilder folder
     flex_checks(MAIN_DIR)
-    print(f"Build process")
+    print(f"Initialting build process")
     
     os.chdir(MAIN_DIR)
     confirmation(note = "Press\n y/Y to proceed\n n/N to terminate\n")
+    print()
     
     #board process for firmware
-    bool_check = input("Do you want to Build firmware only\nPress\n y/Y to proceed\n Any other key to skip\n")
-    if bool_check:
+    while True:
+        bool_check = input("Do you want to Build firmware only\nPress\n y/Y to proceed\n n/N To skip firmware and build the whole OS\n")
+        if bool_check == 'y' or bool_check ==  'Y' or bool_check ==  'N' or bool_check ==  'n':
+            break
+    
+    print()
+    if bool_check == 'y' or bool_check == 'Y':
         custom_build(board = board, targetdirectory = MAIN_DIR, firmware=True)
 
-    
+    print()
     print(f"Whole build process which includes rootfs, bootfs and firmware")
     bool_check = input("Do you want to Build whole OS\nPress\n y/Y to proceed\n Any other key to skip\n")
     if bool_check:

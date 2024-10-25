@@ -98,7 +98,7 @@ CONFIG_APP:
   OPENSSL: y
   KEYCTL_CAAM: y
   CRCONF: y
-  OPTEE: n
+  OPTEE: y
   LIBPKCS11: y
   SECURE_OBJ: y
 
